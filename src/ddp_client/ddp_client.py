@@ -13,7 +13,7 @@ from .subscription_manager import SubscriptionManager
 
 def _ensure_connected(func):
     @wraps(func)
-    def wrapper(self: DDPClient, *args, **kwargs):
+    def wrapper(self: "DDPClient", *args, **kwargs):
         if not self._socket.connected:
             raise ConnectionError("Not connected to server")
         return func(self, *args, **kwargs)
