@@ -41,6 +41,22 @@ class DDPClient:
 
         self._connect_future: Optional[asyncio.Future] = None
 
+    @property
+    def connecting(self) -> bool:
+        return self._connect_future is not None and not self._connect_future.done()
+
+    @property
+    def connected(self) -> bool:
+        return self._connect_future is not None and self._connect_future.done()
+
+    @property
+    def stopping(self) -> bool:
+        return self._socket.stopping
+
+    @property
+    def closed(self) -> bool:
+        return self._socket.closed
+
     async def connect(self) -> None:
         self._connect_future = asyncio.Future()
         await self._socket.connect()
@@ -143,18 +159,17 @@ class DDPClient:
 
     async def _handle_connected(self, data: dict) -> None:
         self._session_id = data.get("session")
-        if self._connect_future:
+        if self._connect_future is not None:
             self._connect_future.set_result(None)
-            self._connect_future = None
 
     async def _handle_socket_reconnect(self) -> None:
-        await self._send_connect()
+        await self.connect()
 
     async def _handle_failed(self, data: dict) -> None:
         version = data.get("version")
         if version and version in self.DDP_VERSIONS:
             self._version = version
-            await self._send_connect()
+            await self.connect()
         else:
             raise ConnectionError("Version negotiation failed")
 
