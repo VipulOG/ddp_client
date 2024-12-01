@@ -14,14 +14,16 @@ class Socket:
         on_reconnect: Callable = None,
         max_reconnect_attempts: int = 3,
     ):
+        self.connected = False
+        self.stopping = False
+        self.closed = False
+
         self._server_url = server_url
         self._websocket: Optional[ClientConnection] = None
         self._on_message = on_message
-        self._stopping = False
         self._on_reconnect = on_reconnect
         self._reconnect_attempt = 0
         self._max_reconnect_attempts = max_reconnect_attempts
-        self.connected = False
 
     async def connect(self) -> None:
         try:
@@ -45,10 +47,11 @@ class Socket:
                 await self._on_reconnect()
         else:
             # logger.error("Max reconnection attempts reached")
+            self.closed = True
             raise ConnectionError("Failed to connect to server")
 
     async def _message_handler(self) -> None:
-        while not self._stopping and self._websocket:
+        while not self.stopping and not self.closed and self._websocket:
             try:
                 message = await self._websocket.recv()
                 await self._on_message(message)
@@ -68,7 +71,9 @@ class Socket:
             raise ConnectionError("Not connected to server")
 
     async def close(self) -> None:
-        self._stopping = True
+        self.stopping = True
         if self._websocket:
             await self._websocket.close()
         self.connected = False
+        self.closed = True
+        self.stopping = False
