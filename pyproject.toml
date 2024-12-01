@@ -10,6 +10,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.11"
 websockets = "^14.1"
+ejson = "^0.1.6"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.7.0"

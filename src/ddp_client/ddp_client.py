@@ -1,8 +1,9 @@
 import asyncio
-import json
 import uuid
 from functools import wraps
 from typing import Any, Callable, List, Optional
+
+import ejson
 
 from .collection_manager import CollectionManager
 from .message_types import MessageType
@@ -116,10 +117,10 @@ class DDPClient:
         await self._send(msg)
 
     async def _send(self, msg: dict) -> None:
-        await self._socket.send(json.dumps(msg))
+        await self._socket.send(ejson.dumps(msg))
 
     async def _handle_message(self, message: str) -> None:
-        data: dict = json.loads(message)
+        data: dict = ejson.loads(message)
         msg = data.get("msg")
 
         if not msg or msg not in MessageType._value2member_map_:
