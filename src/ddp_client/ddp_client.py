@@ -57,11 +57,16 @@ class DDPClient:
     def closed(self) -> bool:
         return self._socket.closed
 
-    async def connect(self) -> None:
+    async def connect(self, timeout: float = 10.0) -> None:
         self._connect_future = asyncio.Future()
-        await self._socket.connect()
-        await self._send_connect()
-        await self._connect_future
+        try:
+            await self._socket.connect()
+            await self._send_connect()
+            await asyncio.wait_for(self._connect_future, timeout)
+        except asyncio.TimeoutError:
+            self._connect_future.cancel()
+            self._connect_future = None
+            raise
 
     @_ensure_connected
     async def call(
