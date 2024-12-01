@@ -12,7 +12,7 @@ class Socket:
         server_url: str,
         on_message: Callable,
         on_reconnect: Callable = None,
-        max_reconnect_attempts: int = 5,
+        max_reconnect_attempts: int = 3,
     ):
         self._server_url = server_url
         self._websocket: Optional[ClientConnection] = None
