@@ -35,7 +35,7 @@ class DDPClient(AsyncIOEventEmitter):
     async def unsubscribe(self, sub_id: str) -> None:
         await self._subscription_manager.unsubscribe(sub_id)
 
-    async def call_method(self, method: str, params: List[Any] | None = None) -> Any:
+    async def call(self, method: str, params: List[Any] | None = None) -> Any:
         return await self._method_manager.call_method(method, params)
 
     async def close(self) -> None:
