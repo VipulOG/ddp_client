@@ -11,6 +11,7 @@ packages = [
 python = "^3.11"
 websockets = "^14.1"
 ejson = "^0.1.6"
+pyee = "^12.1.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.7.0"

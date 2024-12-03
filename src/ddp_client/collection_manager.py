@@ -1,43 +1,31 @@
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, Set
+from pyee.asyncio import AsyncIOEventEmitter
+
+from .message_router import MessageRouter
+from .message_types import MessageType
 
 
-@dataclass
-class CollectionManager:
-    _collections: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    _handlers: Dict[str, Set[Callable]] = field(
-        default_factory=lambda: {"added": set(), "changed": set(), "removed": set()}
-    )
+class CollectionManager(AsyncIOEventEmitter):
+    def __init__(self, message_router: MessageRouter):
+        super().__init__()
+        self._router = message_router
+        self._router.on(MessageType.ADDED, self.handle_added)
+        self._router.on(MessageType.CHANGED, self.handle_changed)
+        self._router.on(MessageType.REMOVED, self.handle_removed)
 
-    def handle_added(self, collection: str, id: str, fields: dict) -> None:
-        if collection not in self._collections:
-            self._collections[collection] = {}
-        self._collections[collection][id] = fields
-        for handler in self._handlers["added"]:
-            handler(collection, id, fields)
+    async def handle_added(self, data: dict) -> None:
+        collection = data.get("collection")
+        if collection:
+            self.emit("added", collection, data)
 
-    def handle_changed(self, collection: str, id: str, fields: dict) -> None:
-        if collection in self._collections and id in self._collections[collection]:
-            self._collections[collection][id].update(fields)
-            for handler in self._handlers["changed"]:
-                handler(collection, id, fields)
+    async def handle_changed(self, data: dict) -> None:
+        collection = data.get("collection")
+        if collection:
+            self.emit("changed", collection, data)
 
-    def handle_removed(self, collection: str, id: str) -> None:
-        if collection in self._collections and id in self._collections[collection]:
-            del self._collections[collection][id]
-            for handler in self._handlers["removed"]:
-                handler(collection, id)
+    async def handle_removed(self, data: dict) -> None:
+        collection = data.get("collection")
+        if collection:
+            self.emit("removed", collection, data)
 
-    def add_handler(self, event_type: str, callback: Callable) -> None:
-        if event_type in self._handlers:
-            self._handlers[event_type].add(callback)
-
-    def remove_handler(self, event_type: str, callback: Callable) -> None:
-        if event_type in self._handlers:
-            self._handlers[event_type].discard(callback)
-
-    def clear(self) -> None:
-        self._collections.clear()
-
-    def close(self) -> None:
-        self.clear()
+    async def close(self) -> None:
+        await self.wait_for_complete()
