@@ -13,4 +13,7 @@
   "files.exclude": {
     "**/__pycache__": true
   },
+  "cSpell.words": [
+    "ejson"
+  ],
 }
