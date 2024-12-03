@@ -12,7 +12,9 @@
       pkgs = nixpkgs.legacyPackages.${system};
       p2n = poetry2nix.lib.mkPoetry2Nix { inherit pkgs; };
 
-      pypkgs-build-requirements = {};
+      pypkgs-build-requirements = {
+        ejson = ["setuptools"];
+      };
 
       p2n-overrides = p2n.defaultPoetryOverrides.extend (self: super:
         builtins.mapAttrs (package: build-requirements:
