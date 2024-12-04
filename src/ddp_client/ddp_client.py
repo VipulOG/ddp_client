@@ -22,6 +22,9 @@ class DDPClient(AsyncIOEventEmitter):
         self._subscription_manager = SubscriptionManager(self._sender, self._router)
         self._collection_manager = CollectionManager(self._router)
 
+        self._session_manager.on("connected", self._handle_session_connected)
+        self._session_manager.on("disconnected", self._handle_session_disconnected)
+
         self._collection_manager.on("added", self._handle_collection_added)
         self._collection_manager.on("changed", self._handle_collection_changed)
         self._collection_manager.on("removed", self._handle_collection_removed)
@@ -58,3 +61,9 @@ class DDPClient(AsyncIOEventEmitter):
     async def _handle_collection_removed(self, collection: str, data: dict) -> None:
         self.emit("collection_removed", collection, data)
         self.emit(f"collection:{collection}:removed", data)
+
+    async def _handle_session_connected(self) -> None:
+        self.emit("connected")
+
+    async def _handle_session_disconnected(self) -> None:
+        self.emit("disconnected")

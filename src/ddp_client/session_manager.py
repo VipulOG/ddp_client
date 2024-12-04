@@ -48,12 +48,14 @@ class SessionManager(AsyncIOEventEmitter):
         await self.wait_for_complete()
 
     async def _handle_socket_connection_change(self, connected: bool) -> None:
-        pass
+        if not connected:
+            self.emit("disconnected")
 
     async def _handle_connected(self, data: dict) -> None:
         self._session_id = data.get("session")
         if self._connect_future is not None:
             self._connect_future.set_result(self._session_id)
+            self.emit("connected")
 
     async def _handle_failed(self, data: dict) -> None:
         version = data.get("version")
