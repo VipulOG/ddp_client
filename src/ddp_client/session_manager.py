@@ -7,7 +7,7 @@ from .constants import DDP_SUPPORTED_VERSIONS
 from .message_router import MessageRouter
 from .message_sender import MessageSender
 from .message_types import MessageType
-from .socket import ConnectionState, Socket
+from .socket import Socket
 
 
 class SessionManager(AsyncIOEventEmitter):
@@ -45,7 +45,7 @@ class SessionManager(AsyncIOEventEmitter):
     async def close(self) -> None:
         await self.wait_for_complete()
 
-    async def _handle_socket_connection_change(self, state: ConnectionState) -> None:
+    async def _handle_socket_connection_change(self, connected: bool) -> None:
         pass
 
     async def _handle_connected(self, data: dict) -> None:
