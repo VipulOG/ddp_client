@@ -29,14 +29,16 @@ class SessionManager(AsyncIOEventEmitter):
         self._router.on(MessageType.CONNECTED, self._handle_connected)
         self._router.on(MessageType.FAILED, self._handle_failed)
 
-    async def connect(self, timeout: float = 10.0) -> None:
+    async def connect(self, session_id: str = None, timeout: float = 10.0) -> str:
         self._connect_future = asyncio.Future()
         try:
             await self._socket.connect()
             await self._sender.send_connect(
-                self._version, DDP_SUPPORTED_VERSIONS, self._session_id
+                version=self._version,
+                support=DDP_SUPPORTED_VERSIONS,
+                session_id=session_id or self._session_id,
             )
-            await asyncio.wait_for(self._connect_future, timeout)
+            return await asyncio.wait_for(self._connect_future, timeout)
         except asyncio.TimeoutError:
             self._connect_future.cancel()
             self._connect_future = None
@@ -51,7 +53,7 @@ class SessionManager(AsyncIOEventEmitter):
     async def _handle_connected(self, data: dict) -> None:
         self._session_id = data.get("session")
         if self._connect_future is not None:
-            self._connect_future.set_result(None)
+            self._connect_future.set_result(self._session_id)
 
     async def _handle_failed(self, data: dict) -> None:
         version = data.get("version")

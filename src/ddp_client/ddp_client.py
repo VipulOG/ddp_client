@@ -26,8 +26,8 @@ class DDPClient(AsyncIOEventEmitter):
         self._collection_manager.on("changed", self._handle_collection_changed)
         self._collection_manager.on("removed", self._handle_collection_removed)
 
-    async def connect(self, timeout: float = 10.0) -> None:
-        await self._session_manager.connect(timeout=timeout)
+    async def connect(self, session_id: str, timeout: float = 10.0) -> str:
+        await self._session_manager.connect(session_id=session_id, timeout=timeout)
 
     async def subscribe(self, name: str, params: List[Any] | None = None) -> str:
         return await self._subscription_manager.subscribe(name, params)
