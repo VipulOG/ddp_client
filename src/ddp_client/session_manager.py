@@ -28,6 +28,7 @@ class SessionManager(AsyncIOEventEmitter):
         self._socket.on("connection", self._handle_socket_connection_change)
         self._router.on(MessageType.CONNECTED, self._handle_connected)
         self._router.on(MessageType.FAILED, self._handle_failed)
+        self._router.on(MessageType.PING, self._handle_ping)
 
     async def connect(self, session_id: str = None, timeout: float = 10.0) -> str:
         self._connect_future = asyncio.Future()
@@ -64,3 +65,6 @@ class SessionManager(AsyncIOEventEmitter):
             await self.connect()
         else:
             raise ConnectionError("Version negotiation failed: Unsupported version")
+
+    async def _handle_ping(self, data: dict) -> None:
+        await self._sender.send_pong()

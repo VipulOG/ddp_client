@@ -10,6 +10,9 @@ class MessageSender:
     def __init__(self, socket: Socket) -> None:
         self._socket = socket
 
+    async def send_pong(self) -> None:
+        await self._send({"msg": MessageType.PONG.value})
+
     async def send_connect(
         self, version: str, support: List[str], session_id: Optional[str] = None
     ) -> None:
