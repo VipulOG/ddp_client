@@ -55,7 +55,7 @@ class Socket(AsyncIOEventEmitter):
                 message = await self._websocket.recv()
                 self.emit("message", message)
             except websockets.ConnectionClosed:
-                self.disconnect()
+                await self.disconnect()
 
     def _set_connected(self, is_connected: bool) -> None:
         self._connected = is_connected
